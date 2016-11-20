@@ -201,39 +201,137 @@
 
 # test gevent6  gevent.queue
 # ############################################################
-import gevent
-from gevent.queue import Queue, Empty
-
-tasks = Queue(maxsize=20)
-
-def worker(n):
-    try:
-        while True:
-            task = tasks.get(timeout=1)     # decrements queue size by 1
-            print "Worker %s got task %s" % (n, task)
-            gevent.sleep(0)
-    except Empty:
-        print "quitting time!"
-
-def boss():
-    """
-    Boss will wait to hand out work until a individual worker is free
-    since the maxsize of the task queue is 3.
-    """
-    for i in xrange(1, 10):
-        tasks.put(i)
-        print "Assigned all work in iteration 1"
-
-#    for i in xrange(10, 20):
+#import gevent
+#from gevent.queue import Queue, Empty
+#
+#tasks = Queue(maxsize=20)
+#
+#def worker(n):
+#    try:
+#        while True:
+#            task = tasks.get(timeout=1)     # decrements queue size by 1
+#            print "Worker %s got task %s" % (n, task)
+#            gevent.sleep(0)
+#    except Empty:
+#        print "quitting time!"
+#
+#def boss():
+#    """
+#    Boss will wait to hand out work until a individual worker is free
+#    since the maxsize of the task queue is 3.
+#    """
+#    for i in xrange(1, 10):
 #        tasks.put(i)
-#        print "Assigned all work in iteration 2"
+#        print "Assigned all work in iteration 1"
+#
+##    for i in xrange(10, 20):
+##        tasks.put(i)
+##        print "Assigned all work in iteration 2"
+#
+#gevent.joinall([
+#    gevent.spawn(boss),
+#    gevent.spawn(worker, 'steve'),
+#    gevent.spawn(worker, 'john'),
+#    gevent.spawn(worker, 'janny'),
+#    ])
 
-gevent.joinall([
-    gevent.spawn(boss),
-    gevent.spawn(worker, 'steve'),
-    gevent.spawn(worker, 'john'),
-    gevent.spawn(worker, 'janny'),
-    ])
+
+# 组和池
+# test gevent7  gevent.pool.Group()  01
+# ############################################################
+#import gevent
+#from gevent.pool import Group
+#
+#def talk(msg):
+#    for i in xrange(3):
+#        print msg
+#
+#g1 = gevent.spawn(talk, 'bar')
+#g2 = gevent.spawn(talk, 'foo')
+#g3 = gevent.spawn(talk, 'fizz')
+#
+#group = Group()
+#group.add(g1)
+#group.add(g2)
+#group.join()
+#
+#group.add(g3)
+#group.join()
+
+
+# 组和池
+# test gevent7  gevent.pool.Group()  01
+# ############################################################
+import gevent
+from gevent import getcurrent
+from gevent.pool import Group
+
+group = Group()
+
+def hello_from(n):
+    print "Size of group %s" % len(group)
+    print "hello from greenlet %s" % id(getcurrent())
+
+group.map(hello_from, xrange(3))
+
+def intensive(n):
+    gevent.sleep(3 - n)
+    return "task", n
+
+print "Ordered"
+
+ogroup = Group()
+for i in ogroup.imap(intensive, xrange(3)):
+    print i
+
+print "Unordered"
+
+igroup = Group()
+for i in igroup.imap_unordered(intensive, xrange(3)):
+    print i
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
